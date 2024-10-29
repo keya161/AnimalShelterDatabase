@@ -19,10 +19,10 @@ def get_db():
         db.close()
 
 
-# # Test the connection
-# try:
-#     with engine.connect() as connection:
-#         print("Connection to the database was successful!")
-# except Exception as e:
-#     print("Failed to connect to the database.")
-#     print(e)
+# Test the connection
+try:
+    with engine.connect() as connection:
+        print("Connection to the database was successful!")
+except Exception as e:
+    print("Failed to connect to the database.")
+    print(e)
