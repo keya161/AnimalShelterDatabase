@@ -1,6 +1,12 @@
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, CHAR, Date, Enum, Float
 from sqlalchemy.orm import relationship
 from .database import Base
+import enum
+class RoleEnum(str, enum.Enum):
+    ADMIN = "admin"
+    DOCTOR = "doctor"
+    TECHNICIAN = "technician"
+    VOLUNTEER = "volunteer"
 
 class Employee(Base):
     __tablename__ = "employee"
@@ -8,15 +14,15 @@ class Employee(Base):
     employee_id = Column(CHAR(5), primary_key=True, nullable=False)
     name = Column(String(45), nullable=False)
     date_of_joining = Column(Date, nullable=False)
-    role = Column(String(45), nullable=False)
+    role = Column(Enum(RoleEnum), nullable=False)  # Define role with Enum
     credentials = relationship("Credentials", back_populates="employee", uselist=False)
 
 class Credentials(Base):
     __tablename__ = "credentials"
     
     employee_id = Column(CHAR(5), ForeignKey("employee.employee_id"), primary_key=True, nullable=False)
-    username = Column(String(45), nullable=False)
-    password = Column(String(45), nullable=False)
+    username = Column(String(45), unique=True, nullable=False)
+    password = Column(String(255), nullable=False)  # Use hashed password
     employee = relationship("Employee", back_populates="credentials", uselist=False)
 
 class Animal(Base):
@@ -111,7 +117,6 @@ class Adopter(Base):
     adopter_id = Column(CHAR(5), primary_key=True, nullable=False)
     name = Column(String(45), nullable=False)
     animal_id = Column(CHAR(5), ForeignKey("animals.animal_id"), nullable=False)
-    animal_name = Column(String(45), nullable=False)
     contribution = Column(Float, nullable=False)
     
     animal = relationship("Animal", back_populates="adopters")
