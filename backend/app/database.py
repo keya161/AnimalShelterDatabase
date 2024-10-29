@@ -19,7 +19,7 @@ def get_db():
         db.close()
 
 
-# Test the connection
+# # Test the connection
 # try:
 #     with engine.connect() as connection:
 #         print("Connection to the database was successful!")
