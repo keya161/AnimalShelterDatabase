@@ -7,6 +7,7 @@ from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from app.models import Employee, RoleEnum,Credentials
+from app.database import get_db
 
 # Password hashing configuration
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -20,11 +21,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 class AuthenticationError(Exception):
-    pass
-
-def get_db():
-    # This should return your SQLAlchemy database session
-    # Implement based on your database setup
     pass
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -73,7 +69,6 @@ def create_new_user(
     password: str,
 ):
     try:
-        # Check if username already exists
         existing_credentials = (
             db.query(Credentials)
             .filter(Credentials.username == username)
