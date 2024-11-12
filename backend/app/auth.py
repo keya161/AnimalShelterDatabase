@@ -60,7 +60,7 @@ def authenticate_user(db: Session, username: str, password: str):
     except SQLAlchemyError as e:
         raise AuthenticationError(f"Database error: {str(e)}")
 
-def create_new_user(
+def create_new_user( #register
     db: Session,
     employee_id: str,
     name: str,
