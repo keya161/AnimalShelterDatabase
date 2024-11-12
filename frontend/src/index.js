@@ -1,13 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import LoginRegisterForm from './pages/AuthPage';
+import AuthPage from './pages/AuthPage';
+import UserManagement from './components/AdopterCRUD';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <LoginRegisterForm />
+    <UserManagement />
   </React.StrictMode>
 );
 

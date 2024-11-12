@@ -1,124 +1,107 @@
-import React, { useState } from 'react';
+import './AuthPage.css';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import $ from 'jquery'; // Import jQuery if you need to use it
 
-const LoginRegisterForm = () => {
-    const [activeTab, setActiveTab] = useState('signup');
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        password: '',
-        loginEmail: '',
-        loginPassword: ''
-    });
+function AuthPage() {
+    useEffect(() => {
+        $('.form').find('input, textarea').on('keyup blur focus', function (e) {
+            var $this = $(this),
+                label = $this.prev('label');
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
+            if (e.type === 'keyup') {
+                if ($this.val() === '') {
+                    label.removeClass('active highlight');
+                } else {
+                    label.addClass('active highlight');
+                }
+            } else if (e.type === 'blur') {
+                if ($this.val() === '') {
+                    label.removeClass('active highlight');
+                } else {
+                    label.removeClass('highlight');
+                }
+            } else if (e.type === 'focus') {
+                if ($this.val() === '') {
+                    label.removeClass('highlight');
+                } else if ($this.val() !== '') {
+                    label.addClass('highlight');
+                }
+            }
+        });
 
-    const handleSubmit = (e, type) => {
-        e.preventDefault();
-        // Handle form submission based on type (login/register)
-        console.log(`${type} submission:`, formData);
-    };
-
-    const InputField = ({ label, name, type = 'text', isLogin = false }) => {
-        const [isFocused, setIsFocused] = useState(false);
-        const fieldName = isLogin ? `login${name.charAt(0).toUpperCase() + name.slice(1)}` : name;
-        const value = formData[fieldName];
-
-        return (
-            <div className="field-wrap">
-                <label className={`${value || isFocused ? 'active' : ''} ${isFocused ? 'highlight' : ''}`}>
-                    {label}<span className="req">*</span>
-                </label>
-                <input
-                    type={type}
-                    required
-                    name={fieldName}
-                    value={value}
-                    onChange={handleInputChange}
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
-                    autoComplete="off"
-                />
-            </div>
-        );
-    };
+        $('.tab a').on('click', function (e) {
+            e.preventDefault();
+            $(this).parent().addClass('active');
+            $(this).parent().siblings().removeClass('active');
+            let target = $(this).attr('href');
+            $('.tab-content > div').not(target).hide();
+            $(target).fadeIn(600);
+        });
+    }, []);
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-[#c1bdba] font-['Titillium_Web']">
-            <div className="form">
-                <ul className="tab-group">
-                    <li className={`tab ${activeTab === 'signup' ? 'active' : ''}`}>
-                        <a onClick={() => setActiveTab('signup')}>Register</a>
-                    </li>
-                    <li className={`tab ${activeTab === 'login' ? 'active' : ''}`}>
-                        <a onClick={() => setActiveTab('login')}>Log In</a>
-                    </li>
-                </ul>
+        <div className="form">
+            <ul className="tab-group">
+                <li className="tab active"><a href="#signup">Register</a></li>
+                <li className="tab"><a href="#login">Log In</a></li>
+            </ul>
 
-                <div className="tab-content">
-                    {activeTab === 'signup' && (
-                        <div id="signup">
-                            <h1>Register for Free!</h1>
-                            <form onSubmit={(e) => handleSubmit(e, 'register')}>
-                                <div className="top-row">
-                                    <div>
-                                        <InputField label="First Name" name="firstName" />
-                                    </div>
-                                    <div>
-                                        <InputField label="Last Name" name="lastName" />
-                                    </div>
-                                </div>
-                                <InputField label="Email" name="email" type="email" />
-                                <InputField
-                                    label="Password"
-                                    name="password"
-                                    type="password"
-                                />
-                                <button type="submit" className="button button-block">
-                                    Register
-                                </button>
-                            </form>
+            <div className="tab-content">
+                <div id="signup">
+                    <h1>Register</h1>
+                    <form action="/" method="post">
+                        <div className="top-row">
+                            <div className="field-wrap">
+                                <label>
+                                    First Name<span className="req">*</span>
+                                </label>
+                                <input type="text" required autoComplete="off" />
+                            </div>
+                            <div className="field-wrap">
+                                <label>
+                                    Last Name<span className="req">*</span>
+                                </label>
+                                <input type="text" required autoComplete="off" />
+                            </div>
                         </div>
-                    )}
+                        <div className="field-wrap">
+                            <label>
+                                Username<span className="req">*</span>
+                            </label>
+                            <input type="text" required autoComplete="off" />
+                        </div>
+                        <div className="field-wrap">
+                            <label>
+                                Password<span className="req">*Minimum 6 characters!</span>
+                            </label>
+                            <input type="password" required autoComplete="off" />
+                        </div>
+                        <button type="submit" className="button button-block">Register</button>
+                    </form>
+                </div>
 
-                    {activeTab === 'login' && (
-                        <div id="login">
-                            <h1>Welcome!</h1>
-                            <form onSubmit={(e) => handleSubmit(e, 'login')}>
-                                <InputField
-                                    label="Email"
-                                    name="email"
-                                    type="email"
-                                    isLogin
-                                />
-                                <InputField
-                                    label="Password"
-                                    name="password"
-                                    type="password"
-                                    isLogin
-                                />
-                                <div className="forgot">
-                                    <a href="#">Forgot Password?</a>
-                                </div>
-                                <div className="forgot">
-                                    <a href="#">Forgot Email?</a>
-                                </div>
-                                <button type="submit" className="button button-block">
-                                    Log In
-                                </button>
-                            </form>
+                <div id="login">
+                    <h1>Welcome!</h1>
+                    <form action="/" method="post">
+                        <div className="field-wrap">
+                            <label>
+                                Email<span className="req"></span>
+                            </label>
+                            <input type="email" required autoComplete="off" />
                         </div>
-                    )}
+                        <div className="field-wrap">
+                            <label>
+                                Password<span className="req"></span>
+                            </label>
+                            <input type="password" required autoComplete="off" />
+                        </div>
+                        <button type="submit" className="button button-block">Log In</button>
+                    </form>
                 </div>
             </div>
         </div>
     );
-};
+}
 
-export default LoginRegisterForm;
+export default AuthPage;

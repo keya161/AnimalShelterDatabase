@@ -1,4 +1,253 @@
-/* Add these styles to your CSS file */
+/*! normalize.css v3.0.2 | MIT License | git.io/normalize */
+html {
+    font-family: sans-serif;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%
+}
+
+body {
+    margin: 0
+}
+
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+main,
+menu,
+nav,
+section,
+summary {
+    display: block
+}
+
+audio,
+canvas,
+progress,
+video {
+    display: inline-block;
+    vertical-align: baseline
+}
+
+audio:not([controls]) {
+    display: none;
+    height: 0
+}
+
+[hidden],
+template {
+    display: none
+}
+
+a {
+    background-color: transparent
+}
+
+a:active,
+a:hover {
+    outline: 0
+}
+
+abbr[title] {
+    border-bottom: 1px dotted
+}
+
+b,
+strong {
+    font-weight: bold
+}
+
+dfn {
+    font-style: italic
+}
+
+h1 {
+    font-size: 2em;
+    margin: 0.67em 0
+}
+
+mark {
+    background: #ff0;
+    color: #000
+}
+
+small {
+    font-size: 80%
+}
+
+sub,
+sup {
+    font-size: 75%;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline
+}
+
+sup {
+    top: -0.5em
+}
+
+sub {
+    bottom: -0.25em
+}
+
+img {
+    border: 0
+}
+
+svg:not(:root) {
+    overflow: hidden
+}
+
+figure {
+    margin: 1em 40px
+}
+
+hr {
+    -moz-box-sizing: content-box;
+    -webkit-box-sizing: content-box;
+    box-sizing: content-box;
+    height: 0
+}
+
+pre {
+    overflow: auto
+}
+
+code,
+kbd,
+pre,
+samp {
+    font-family: monospace, monospace;
+    font-size: 1em
+}
+
+button,
+input,
+optgroup,
+select,
+textarea {
+    color: inherit;
+    font: inherit;
+    margin: 0
+}
+
+button {
+    overflow: visible
+}
+
+button,
+select {
+    text-transform: none
+}
+
+button,
+html input[type="button"],
+input[type="reset"],
+input[type="submit"] {
+    -webkit-appearance: button;
+    cursor: pointer
+}
+
+button[disabled],
+html input[disabled] {
+    cursor: default
+}
+
+button::-moz-focus-inner,
+input::-moz-focus-inner {
+    border: 0;
+    padding: 0
+}
+
+input {
+    line-height: normal
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    padding: 0
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    height: auto
+}
+
+input[type="search"] {
+    -webkit-appearance: textfield;
+    -moz-box-sizing: content-box;
+    -webkit-box-sizing: content-box;
+    box-sizing: content-box
+}
+
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+    -webkit-appearance: none
+}
+
+fieldset {
+    border: 1px solid #c0c0c0;
+    margin: 0 2px;
+    padding: 0.35em 0.625em 0.75em
+}
+
+legend {
+    border: 0;
+    padding: 0
+}
+
+textarea {
+    overflow: auto
+}
+
+optgroup {
+    font-weight: bold
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0
+}
+
+td,
+th {
+    padding: 0
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: border-box;
+}
+
+html {
+    overflow-y: scroll;
+}
+
+body {
+    background: #c1bdba;
+    font-family: 'Titillium Web', sans-serif;
+}
+
+a {
+    text-decoration: none;
+    color: #1ab188;
+    -webkit-transition: .5s ease;
+    transition: .5s ease;
+}
+
+a:hover {
+    color: #179b77;
+}
+
 .form {
     background: rgba(19, 35, 47, 0.9);
     padding: 40px;
@@ -12,7 +261,6 @@
     list-style: none;
     padding: 0;
     margin: 0 0 40px 0;
-    display: flex;
 }
 
 .tab-group:after {
@@ -21,30 +269,33 @@
     clear: both;
 }
 
-.tab {
-    width: 50%;
-}
-
-.tab a {
+.tab-group li a {
     display: block;
     text-decoration: none;
     padding: 15px;
     background: rgba(160, 179, 176, 0.25);
     color: #a0b3b0;
     font-size: 20px;
+    float: left;
+    width: 50%;
     text-align: center;
     cursor: pointer;
+    -webkit-transition: .5s ease;
     transition: .5s ease;
 }
 
-.tab a:hover {
+.tab-group li a:hover {
     background: #179b77;
     color: #ffffff;
 }
 
-.tab.active a {
+.tab-group .active a {
     background: #1ab188;
     color: #ffffff;
+}
+
+.tab-content>div:last-child {
+    display: none;
 }
 
 h1 {
@@ -54,17 +305,15 @@ h1 {
     margin: 0 0 40px;
 }
 
-.field-wrap {
-    position: relative;
-    margin-bottom: 40px;
-}
-
 label {
     position: absolute;
+    -webkit-transform: translateY(6px);
     transform: translateY(6px);
     left: 13px;
     color: rgba(255, 255, 255, 0.5);
+    -webkit-transition: all 0.25s ease;
     transition: all 0.25s ease;
+    -webkit-backface-visibility: hidden;
     pointer-events: none;
     font-size: 22px;
 }
@@ -75,16 +324,22 @@ label .req {
 }
 
 label.active {
-    transform: translateY(-25px);
+    -webkit-transform: translateY(50px);
+    transform: translateY(50px);
     left: 2px;
     font-size: 14px;
+}
+
+label.active .req {
+    opacity: 0;
 }
 
 label.highlight {
     color: #ffffff;
 }
 
-input {
+input,
+textarea {
     font-size: 22px;
     display: block;
     width: 100%;
@@ -95,22 +350,40 @@ input {
     border: 1px solid #a0b3b0;
     color: #ffffff;
     border-radius: 0;
+    -webkit-transition: border-color .25s ease, box-shadow .25s ease;
     transition: border-color .25s ease, box-shadow .25s ease;
 }
 
-input:focus {
+input:focus,
+textarea:focus {
     outline: 0;
     border-color: #1ab188;
 }
 
-.top-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 4%;
+textarea {
+    border: 2px solid #a0b3b0;
+    resize: vertical;
+}
+
+.field-wrap {
+    position: relative;
+    margin-bottom: 40px;
+}
+
+.top-row:after {
+    content: "";
+    display: table;
+    clear: both;
 }
 
 .top-row>div {
+    float: left;
     width: 48%;
+    margin-right: 4%;
+}
+
+.top-row>div:last-child {
+    margin: 0;
 }
 
 .button {
@@ -124,11 +397,13 @@ input:focus {
     letter-spacing: .1em;
     background: #1ab188;
     color: #ffffff;
+    -webkit-transition: all 0.5s ease;
     transition: all 0.5s ease;
-    cursor: pointer;
+    -webkit-appearance: none;
 }
 
-.button:hover {
+.button:hover,
+.button:focus {
     background: #179b77;
 }
 
@@ -140,14 +415,4 @@ input:focus {
 .forgot {
     margin-top: -20px;
     text-align: right;
-    margin-bottom: 10px;
-}
-
-.forgot a {
-    color: #1ab188;
-    text-decoration: none;
-}
-
-.forgot a:hover {
-    color: #179b77;
 }
