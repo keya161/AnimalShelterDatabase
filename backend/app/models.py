@@ -33,8 +33,7 @@ class Animal(Base):
     dob = Column(Date, nullable=False)
     gender = Column(Enum("M", "F"), nullable=False)
     breed_id = Column(CHAR(5), ForeignKey("type.type_id"), nullable=False)
-    passive_adopter = Column(String(45), nullable=True)
-    
+    passive_adopter = Column(Boolean, default=False)    
     breed = relationship("Type", back_populates="animals")
     medical_records = relationship("MedicalRecords", back_populates="animal")
     supplements = relationship("MedicineInventory", secondary="supplements", back_populates="animals")
@@ -72,7 +71,7 @@ class MedicalRecords(Base):
     __tablename__ = "medical_records"
     
     record_id = Column(CHAR(5), primary_key=True, nullable=False)
-    animal_id = Column(CHAR(5), ForeignKey("animals.animal_id"), nullable=False)
+    animal_id = Column(CHAR(5), ForeignKey('animals.animal_id', ondelete='CASCADE'))
     name = Column(String(45), nullable=False)
     report = Column(String(255), nullable=True)
     doctor = Column(String(45), nullable=False)

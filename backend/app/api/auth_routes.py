@@ -9,9 +9,9 @@ from fastapi.security import OAuth2PasswordRequestForm
 # FastAPI route handlers
 from fastapi import APIRouter, Depends
 
-router = APIRouter()
+router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-@router.post("/token")
+@router.post("/login")
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
@@ -29,19 +29,16 @@ async def login_for_access_token(
 @router.post("/register")
 async def register_user(
     employee_id: str,
-    name: str,
-    role: RoleEnum,
     username: str,
     password: str,
     db: Session = Depends(get_db)
 ):
     try:
-        employee = create_new_user(db, employee_id, name, role, username, password)
+        employee = create_new_user(db, employee_id, username, password)
         return {
             "message": "User created successfully",
             "employee_id": employee.employee_id,
             "username": username,
-            "role": employee.role.value
         }
     except AuthenticationError as e:
         raise HTTPException(

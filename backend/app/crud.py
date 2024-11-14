@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from . import models, schemas
 from app.models import Animal, MedicalRecords, Employee, Adopter, Type
-from app.schemas import AnimalCreate, EmployeeCreate, MedicalRecordCreate, AnimalDetail, MedicalRecordBase, AdopterBase
+from app.schemas import AnimalCreate, EmployeeCreate, MedicalRecordCreate, AnimalDetail, MedicalRecordBase, AdopterBase, TypeCreate, TypeResponse, TypeUpdate, BreedDropdownResponse
 
 #Animals
 def create_animal(db: Session, animal: schemas.AnimalCreate):
@@ -34,6 +34,35 @@ def create_animal(db: Session, animal: schemas.AnimalCreate):
     db.refresh(db_animal)
 
     return db_animal
+
+def get_animal(db: Session, animal_id: str):
+    db_animal = db.query(models.Animal).filter(models.Animal.animal_id == animal_id).first()
+    if not db_animal:
+        raise HTTPException(status_code=404, detail="Animal not found")
+    return db_animal
+
+def update_animal(db: Session, animal_id: str, animal_data: schemas.AnimalUpdate):
+    db_animal = db.query(models.Animal).filter(models.Animal.animal_id == animal_id).first()
+    if not db_animal:
+        raise HTTPException(status_code=404, detail="Animal not found")
+    
+    # Update animal fields
+    for key, value in animal_data.dict(exclude_unset=True).items():
+        setattr(db_animal, key, value)
+    
+    db.commit()
+    db.refresh(db_animal)
+    return db_animal
+
+def delete_animal(db: Session, animal_id: str):
+    db_animal = db.query(models.Animal).filter(models.Animal.animal_id == animal_id).first()
+    if not db_animal:
+        raise HTTPException(status_code=404, detail="Animal not found")
+    
+    db.delete(db_animal)
+    db.commit()
+    return {"detail": "Animal deleted successfully"}
+
 #get all details about an animal
 
 def get_animal_by_name(name: str, db: Session):
@@ -180,3 +209,48 @@ def get_employees(db: Session, name: Optional[str]=None):
 
     # Step 5: Return the medical records as a list of MedicalRecordResponse
     return [schemas.EmployeeResponse.from_orm(record) for record in medical_records]
+
+#Type
+
+def create_type(db: Session, type_data: TypeCreate):
+    db_type = Type(**type_data.dict())
+    db.add(db_type)
+    db.commit()
+    db.refresh(db_type)
+    return db_type
+
+def get_type(db: Session, type_id: str):
+    type_record = db.query(Type).filter(Type.type_id == type_id).first()
+    if not type_record:
+        raise HTTPException(status_code=404, detail="Type not found")
+    return type_record
+
+def update_type(db: Session, type_id: str, type_data: TypeUpdate):
+    type_record = db.query(Type).filter(Type.type_id == type_id).first()
+    if not type_record:
+        raise HTTPException(status_code=404, detail="Type not found")
+
+    for key, value in type_data.dict(exclude_unset=True).items():
+        setattr(type_record, key, value)
+    
+    db.commit()
+    db.refresh(type_record)
+    return type_record
+
+def delete_type(db: Session, type_id: str):
+    type_record = db.query(Type).filter(Type.type_id == type_id).first()
+    if not type_record:
+        raise HTTPException(status_code=404, detail="Type not found")
+    
+    db.delete(type_record)
+    db.commit()
+    return {"detail": "Type deleted successfully"}
+
+#Drop downs
+def get_breeds_from_db(db: Session):
+    # Fetch all breeds from the database
+    breeds = db.query(Type.type_id, Type.breed).all()
+    if not breeds:
+        raise HTTPException(status_code=404, detail="No breeds found")
+    # Return the list of breeds in the correct format
+    return [BreedDropdownResponse(type_id=breed[0], breed=breed[1]) for breed in breeds]

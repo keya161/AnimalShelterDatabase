@@ -10,11 +10,28 @@ class AnimalCreate(BaseModel):
     name: str
     dob: date
     gender: str  # Use "M" or "F"
-    passive_adopter: Optional[str] = None
+    passive_adopter: bool
     breed_id: str
 
 class AnimalResponse(AnimalCreate):  # Inherit from AnimalCreate
     animal_id: str  # Corrected to match the database model
+
+    class Config:
+        from_attributes = True
+class AnimalUpdate(BaseModel):
+    name: Optional[str] = None
+    dob: Optional[date] = None
+    gender: Optional[str] = None
+    passive_adopter: Optional[bool] = None
+    breed_id: Optional[str] = None
+
+class AnimalResponse(BaseModel):
+    animal_id: str
+    name: str
+    dob: date
+    gender: str
+    passive_adopter: bool
+    breed_id: str
 
     class Config:
         from_attributes = True
@@ -96,3 +113,44 @@ class EmployeeResponse(BaseModel):
     role: RoleEnum
     class Config:
         from_attributes = True
+
+#Type
+
+# Schema for creating a new Type record
+class TypeCreate(BaseModel):
+    type_id: str
+    breed: str
+    feed: str
+    freq_of_checkup: int
+    bath: Optional[date]
+
+# Schema for updating a Type record
+class TypeUpdate(BaseModel):
+    breed: Optional[str]
+    feed: Optional[str]
+    freq_of_checkup: Optional[int]
+    bath: Optional[date]
+
+# Schema for response
+class TypeResponse(BaseModel):
+    type_id: str
+    breed: str
+    feed: str
+    freq_of_checkup: int
+    bath: Optional[date]
+
+    class Config:
+        from_attributes = True
+        
+
+#Dropdowns
+
+# Schema for the dropdown response
+class BreedDropdownResponse(BaseModel):
+    type_id: str
+    breed: str
+
+    class Config:
+        from_attributes = True 
+        
+        

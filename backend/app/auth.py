@@ -63,8 +63,6 @@ def authenticate_user(db: Session, username: str, password: str):
 def create_new_user( #register
     db: Session,
     employee_id: str,
-    name: str,
-    role: RoleEnum,
     username: str,
     password: str,
 ):
@@ -77,13 +75,13 @@ def create_new_user( #register
         if existing_credentials:
             raise AuthenticationError("Username already registered")
 
-        # Create new employee
-        employee = Employee(
-            employee_id=employee_id,
-            name=name,
-            date_of_joining=datetime.now().date(),
-            role=role
-        )
+        # # Create new employee
+        # employee = Employee(
+        #     employee_id=employee_id,
+        #     name=name,
+        #     date_of_joining=datetime.now().date(),
+        #     role=role
+        # )
         
         # Create credentials with hashed password
         credentials = Credentials(
@@ -92,12 +90,13 @@ def create_new_user( #register
             password=get_password_hash(password)
         )
         
-        db.add(employee)
+        # db.add(employee)
         db.add(credentials)
         db.commit()
-        db.refresh(employee)
+        # db.refresh(employee)
         
-        return employee
+        # return employee
+        return credentials
         
     except SQLAlchemyError as e:
         db.rollback()
