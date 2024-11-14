@@ -75,14 +75,6 @@ def create_new_user( #register
         if existing_credentials:
             raise AuthenticationError("Username already registered")
 
-        # # Create new employee
-        # employee = Employee(
-        #     employee_id=employee_id,
-        #     name=name,
-        #     date_of_joining=datetime.now().date(),
-        #     role=role
-        # )
-        
         # Create credentials with hashed password
         credentials = Credentials(
             employee_id=employee_id,
@@ -90,12 +82,9 @@ def create_new_user( #register
             password=get_password_hash(password)
         )
         
-        # db.add(employee)
         db.add(credentials)
         db.commit()
-        # db.refresh(employee)
         
-        # return employee
         return credentials
         
     except SQLAlchemyError as e:

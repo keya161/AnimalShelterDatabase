@@ -120,14 +120,14 @@ class EmployeeResponse(BaseModel):
 class TypeCreate(BaseModel):
     type_id: str
     breed: str
-    feed: str
+    feed_id: int  # Updated to reference feed_id directly
     freq_of_checkup: int
     bath: Optional[date]
 
 # Schema for updating a Type record
 class TypeUpdate(BaseModel):
     breed: Optional[str]
-    feed: Optional[str]
+    feed_id: Optional[int]  # Updated to reference feed_id directly
     freq_of_checkup: Optional[int]
     bath: Optional[date]
 
@@ -135,7 +135,7 @@ class TypeUpdate(BaseModel):
 class TypeResponse(BaseModel):
     type_id: str
     breed: str
-    feed: str
+    feed_id: int  # Reflects the direct foreign key reference
     freq_of_checkup: int
     bath: Optional[date]
 
@@ -153,4 +153,29 @@ class BreedDropdownResponse(BaseModel):
     class Config:
         from_attributes = True 
         
-        
+class RegisterRequest(BaseModel):
+    employee_id: str
+    username: str
+    password: str    
+    
+#food
+# Base schema for food inventory
+class FoodInventoryBase(BaseModel):
+    type: str
+    stock: int
+    cost_per_kg: float
+
+# Schema for creating food inventory
+class FoodInventoryCreate(FoodInventoryBase):
+    pass
+
+# Schema for updating food inventory
+class FoodInventoryUpdate(FoodInventoryBase):
+    pass
+
+# Schema for the database model
+class FoodInventoryInDB(FoodInventoryBase):
+    food_id: int  # Use integer instead of string for food_id
+    
+    class Config:
+        from_attributes = True

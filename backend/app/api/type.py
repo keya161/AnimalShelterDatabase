@@ -1,11 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from typing import List
 from app.database import get_db
-from typing import List, Optional
+from app.schemas import TypeCreate, TypeUpdate, TypeResponse
+from app.crud import create_type, get_type, update_type, delete_type
 
-# from app.models import Type 
-from app.schemas import TypeUpdate, TypeCreate, TypeResponse, BreedDropdownResponse
-from app.crud import create_type, update_type, delete_type, get_type, get_breeds_from_db
 router = APIRouter(prefix="/types", tags=["Types"])
 
 @router.post("/", response_model=TypeResponse)

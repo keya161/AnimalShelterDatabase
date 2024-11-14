@@ -232,7 +232,7 @@ def update_type(db: Session, type_id: str, type_data: TypeUpdate):
 
     for key, value in type_data.dict(exclude_unset=True).items():
         setattr(type_record, key, value)
-    
+
     db.commit()
     db.refresh(type_record)
     return type_record
@@ -241,7 +241,7 @@ def delete_type(db: Session, type_id: str):
     type_record = db.query(Type).filter(Type.type_id == type_id).first()
     if not type_record:
         raise HTTPException(status_code=404, detail="Type not found")
-    
+
     db.delete(type_record)
     db.commit()
     return {"detail": "Type deleted successfully"}
@@ -254,3 +254,39 @@ def get_breeds_from_db(db: Session):
         raise HTTPException(status_code=404, detail="No breeds found")
     # Return the list of breeds in the correct format
     return [BreedDropdownResponse(type_id=breed[0], breed=breed[1]) for breed in breeds]
+
+#food
+def get_food_inventory(db: Session, food_id: int):
+    return db.query(models.FoodInventory).filter(models.FoodInventory.food_id == food_id).first()
+
+# Get a list of food inventory items with pagination (skip, limit)
+def get_food_inventories(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.FoodInventory).offset(skip).limit(limit).all()
+
+# Create a new food inventory item
+def create_food_inventory(db: Session, food_inventory: schemas.FoodInventoryCreate):
+    db_food_inventory = models.FoodInventory(**food_inventory.dict())
+    db.add(db_food_inventory)
+    db.commit()
+    db.refresh(db_food_inventory)
+    return db_food_inventory
+
+# Update an existing food inventory item
+def update_food_inventory(db: Session, food_id: int, food_inventory: schemas.FoodInventoryUpdate):
+    db_food_inventory = db.query(models.FoodInventory).filter(models.FoodInventory.food_id == food_id).first()
+    if db_food_inventory:
+        for key, value in food_inventory.dict(exclude_unset=True).items():
+            setattr(db_food_inventory, key, value)
+        db.commit()
+        db.refresh(db_food_inventory)
+        return db_food_inventory
+    return None
+
+# Delete a food inventory item by food_id
+def delete_food_inventory(db: Session, food_id: int):
+    db_food_inventory = db.query(models.FoodInventory).filter(models.FoodInventory.food_id == food_id).first()
+    if db_food_inventory:
+        db.delete(db_food_inventory)
+        db.commit()
+        return db_food_inventory
+    return None

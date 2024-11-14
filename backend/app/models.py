@@ -44,28 +44,25 @@ class Type(Base):
     
     type_id = Column(CHAR(5), primary_key=True, nullable=False)
     breed = Column(String(45), nullable=False)
-    feed = Column(String(45), nullable=False)
+    feed_id = Column(Integer, ForeignKey("food_inventory.food_id", ondelete="SET NULL"), nullable=True)  # Direct reference to food inventory
     freq_of_checkup = Column(Integer, nullable=False)
     bath = Column(Date, nullable=True)
     
+    # This will create the reverse relationship in food_inventory
     animals = relationship("Animal", back_populates="breed")
-    food_items = relationship("FoodInventory", secondary="type_for_animals", back_populates="types")
-
-class TypeForAnimals(Base):
-    __tablename__ = "type_for_animals"
-    
-    type_id = Column(CHAR(5), ForeignKey("type.type_id"), primary_key=True)
-    feed_id = Column(CHAR(5), ForeignKey("food_inventory.food_id"), primary_key=True)
+    food_item = relationship("FoodInventory", back_populates="types")
 
 class FoodInventory(Base):
     __tablename__ = "food_inventory"
     
-    food_id = Column(CHAR(5), primary_key=True, nullable=False)
+    food_id = Column(Integer, primary_key=True, autoincrement=True)
     type = Column(String(45), nullable=False)
     stock = Column(Integer, nullable=False)
     cost_per_kg = Column(Float, nullable=False)
     
-    types = relationship("Type", secondary="type_for_animals", back_populates="food_items")
+    # This is the back_populates that connects with Type
+    types = relationship("Type", back_populates="food_item", uselist=False, cascade="all")  # uselist=False because it's one-to-one now
+
 
 class MedicalRecords(Base):
     __tablename__ = "medical_records"
