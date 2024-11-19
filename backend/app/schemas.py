@@ -179,3 +179,24 @@ class FoodInventoryInDB(FoodInventoryBase):
     
     class Config:
         from_attributes = True
+
+class MedicineInventoryBase(BaseModel):
+    name: str
+    stock: int
+    expiry: date
+    date_of_buying: date
+
+class MedicineInventoryCreate(MedicineInventoryBase):
+    pass  # Same as MedicineInventoryBase for create
+
+class MedicineInventoryUpdate(BaseModel):
+    name: Optional[str]
+    stock: Optional[int]
+    expiry: Optional[date]
+    date_of_buying: Optional[date]
+
+class MedicineInventoryInDB(MedicineInventoryBase):
+    medicine_id: str  # Include the medicine ID for DB responses
+
+    class Config:
+        orm_mode = True

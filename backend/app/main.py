@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import RoleEnum, Employee
-from app.api import auth_routes, employee, medical_records, animal_details, type, breeds, food
+from app.api import auth_routes, employee, medical_records, animal_details, type, breeds, food, meds
 
 
 
@@ -31,4 +31,4 @@ app.include_router(animal_details.router)
 app.include_router(type.router)
 app.include_router(breeds.router)
 app.include_router(food.router)
-
+app.include_router(meds.router)

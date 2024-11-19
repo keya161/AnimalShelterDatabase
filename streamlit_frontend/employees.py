@@ -13,7 +13,7 @@ def create_employee():
         employee_id = st.text_input("Employee ID")
         name = st.text_input("Name")
         date_of_joining = st.date_input("Date of Joining", min_value=date(2020, 1, 1), max_value=date.today())
-        role = st.selectbox("Role", ["admin", "Manager", "Employee"])  # Assuming roles are Admin, Manager, Employee
+        role = st.selectbox("Role", ["admin", "doctor", "technician", "volunteer"])  # Assuming roles are Admin, Manager, Employee
         submit_button = st.form_submit_button(label="Create Employee")
 
         if submit_button:
