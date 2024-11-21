@@ -1,15 +1,16 @@
 import streamlit as st
 from datetime import date, datetime
-
 import requests
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://localhost:8000/medical-records"
 
+# Function to add a medical record
 def add_record():
     st.title("Add a Medical Record")
 
     with st.form(key="record_form"):
-        name = st.text_input("Name")
+        name = st.text_input("Type of check up")
+        animal_id = st.text_input("Animal ID")
         report = st.text_input("Report")
         doctor = st.text_input("Doctor Name")
         diagnosis = st.text_input("Diagnosis")
@@ -19,47 +20,43 @@ def add_record():
         submit_button = st.form_submit_button(label="Add Record")
 
         if submit_button:
-            # Convert date_of_joining to string format 'YYYY-MM-DD'
             followUp = followUp.strftime('%Y-%m-%d')
             datet = datetime.now().strftime('%Y-%m-%d')
 
-            # datet = date.strftime('%Y-%m-%d')
-            # API request to create the employee
             record_data = {
+                "animal_id": animal_id,
                 "name": name,
                 "report": report,
                 "doctor": doctor,
                 "date": datet,
                 "diagnosis": diagnosis,
-                "medicine":  medicine,
+                "medicine": medicine,
                 "follow_up": followUp,
                 "freq_of_usage": freq
             }
 
-            # Send the employee data to the backend API
             response = requests.post(f"{BASE_URL}/medical-records/create", json=record_data)
-            
+
             if response.status_code == 200:
                 st.success("Record added successfully!")
             else:
                 st.error(f"Failed to add record: {response.text}")
 
-
-# Function to view employees
+# Function to view medical records
 def view_records():
     st.title("View All Records")
 
-    search_name = st.text_input("Search by name (optional)", "")
+    search_name = st.text_input("Search by animal ID (optional)", "")
     if search_name:
-        response = requests.get(f"{BASE_URL}/medical-records/get?name={search_name}")
+        response = requests.get(f"{BASE_URL}/medical-records?animal_id={search_name}")
     else:
-        response = requests.get(f"{BASE_URL}/medical-records/get")
+        response = requests.get(f"{BASE_URL}/medical-records")
 
     if response.status_code == 200:
         record = response.json()
         if record:
-            # Display employee list
             for r in record:
+                st.write(f"**Animal ID**: {r['animal_id']}")
                 st.write(f"**Name**: {r['name']}")
                 st.write(f"**Report**: {r['report']}")
                 st.write(f"**Doctor**: {r['doctor']}")
@@ -72,6 +69,5 @@ def view_records():
         else:
             st.write("No records found.")
     else:
-        st.error(f"Failed to fetch records: {response.text}")
-
+        st.write("No records found.")
 

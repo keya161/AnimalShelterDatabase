@@ -6,18 +6,15 @@ from typing import List, Optional
 
 from app.database import get_db
 from app.models import MedicalRecords as MedicalRecordModel
-from app.schemas import MedicalRecord as MedicalRecordSchema, MedicalRecordCreate
+from app.schemas import MedicalRecordCreate, MedicalRecordResponse
 from app.crud import create_medical_record, get_medical_records
 
 router = APIRouter(prefix="/medical-records", tags=["Medical Records"])
 
-@router.post("/create", response_model=MedicalRecordSchema)
+@router.post("/create", response_model=MedicalRecordResponse)
 def api_create_medical_record(record: MedicalRecordCreate, db: Session = Depends(get_db)):
     return create_medical_record(db=db, record=record)
 
-@router.get("/get", response_model=List[MedicalRecordSchema])  # Adjust response model as needed
-def api_get_medical_records(name: Optional[str] = None, db: Session = Depends(get_db)):
-    """
-    Retrieve medical records for a specific animal or all medical records if no animal_name is provided.
-    """
-    return get_medical_records(name=name, db=db)
+@router.get("/medical-records", response_model=List[MedicalRecordResponse])
+def api_get_medical_records(animal_id: Optional[str] = None, db: Session = Depends(get_db)):
+    return get_medical_records(db=db, animal_id=animal_id)

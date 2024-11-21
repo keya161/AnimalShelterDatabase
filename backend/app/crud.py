@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 
 from typing import List, Optional
 from . import models, schemas
-from app.models import Animal, MedicalRecords, Employee, Adopter, Type
-from app.schemas import AnimalCreate, EmployeeCreate, MedicalRecordCreate, AnimalDetail, MedicalRecordBase, AdopterBase, TypeCreate, TypeResponse, TypeUpdate, BreedDropdownResponse
+from app.models import Animal, MedicalRecords, Employee, Adopter, Type, MedicineInventory
+from app.schemas import AnimalCreate, EmployeeCreate, MedicalRecordCreate, AnimalDetail, MedicalRecordBase, AdopterGet, TypeCreate, TypeResponse, TypeUpdate, BreedDropdownResponse, AdopterCreate, AdopterUpdate, MedicineInventoryCreate, MedicalRecordResponse
 
 #Animals
 def create_animal(db: Session, animal: schemas.AnimalCreate):
@@ -98,7 +98,7 @@ def get_animal_by_name(name: str, db: Session):
         if row.MedicalRecords and row.MedicalRecords.record_id not in medical_records_dict:
             medical_records_dict[row.MedicalRecords.record_id] = MedicalRecordBase(
                 record_id=row.MedicalRecords.record_id,
-                report=row.MedicalRecords.report,
+                report=row.MedicalRecords.report or "",
                 doctor=row.MedicalRecords.doctor,
                 date=row.MedicalRecords.date.isoformat(),
                 diagnosis=row.MedicalRecords.diagnosis,
@@ -111,10 +111,10 @@ def get_animal_by_name(name: str, db: Session):
     adopters_dict = {}
     for row in results:
         if row.Adopter and row.Adopter.adopter_id not in adopters_dict:
-            adopters_dict[row.Adopter.adopter_id] = AdopterBase(
+            adopters_dict[row.Adopter.adopter_id] = AdopterGet(
                 adopter_id=row.Adopter.adopter_id,
                 name=row.Adopter.name,
-                contribution=row.Adopter.contribution
+                contribution=row.Adopter.contribution              
             )
     
     return AnimalDetail(
@@ -125,9 +125,11 @@ def get_animal_by_name(name: str, db: Session):
         medical_records=list(medical_records_dict.values())
     )
 #medical records
+
 def create_medical_record(db: Session, record: MedicalRecordCreate):
     # Step 1: Look up the animal by name to get its ID
-    animal = db.query(Animal).filter(Animal.name == record.name).first()
+    print(f"Searching for Animal with ID:{record.animal_id}")
+    animal = db.query(Animal).filter(Animal.animal_id == record.animal_id).first()
 
     if not animal:
         raise HTTPException(status_code=404, detail="Animal not found")
@@ -141,11 +143,9 @@ def create_medical_record(db: Session, record: MedicalRecordCreate):
         new_record_id = f"MR{last_id + 1:03d}"  # Increment and format to "MRXXX"
     else:
         new_record_id = "MR001"  # Starting value if no records exist
-
-    # Step 3: Create the medical record with the found animal ID and generated record ID
     db_record = MedicalRecords(
-        record_id=new_record_id,  # Use the dynamically generated ID
-        animal_id=animal.animal_id,  # Fill in the animal ID automatically
+        record_id=new_record_id,# Automatically generate record_id
+        animal_id=record.animal_id,
         name=record.name,
         report=record.report,
         doctor=record.doctor,
@@ -153,31 +153,30 @@ def create_medical_record(db: Session, record: MedicalRecordCreate):
         diagnosis=record.diagnosis,
         medicine=record.medicine,
         follow_up=record.follow_up,
-        freq_of_usage=record.freq_of_usage
+        freq_of_usage=record.freq_of_usage,
     )
-    
-    # Step 4: Add and commit the new medical record to the database
     db.add(db_record)
     db.commit()
     db.refresh(db_record)
-
     return db_record
-def get_medical_records( db: Session, name: Optional[str] = None) -> List[schemas.MedicalRecordResponse]:
+
+def get_medical_records(db: Session, animal_id: Optional[str] = None) -> List[schemas.MedicalRecordResponse]:
     # Step 1: Query the MedicalRecords
     query = db.query(models.MedicalRecords)
 
-    # Step 2: Filter by animal_id if provided
-    if name:
-        query = query.filter(models.MedicalRecords.name == name)
+    # Step 2: If animal_id is provided, filter records by the given animal_id
+    if animal_id:
+        query = query.filter(models.MedicalRecords.animal_id == animal_id)
 
-    # Step 3: Fetch all medical records
+    # Step 3: Fetch all medical records (filtered or all)
     medical_records = query.all()
 
     # Step 4: Check if any records were found
     if not medical_records:
-        raise HTTPException(status_code=404, detail="No medical records found")
+        # If no records found, raise a 404 HTTP exception
+        raise HTTPException(status_code=404, detail="No medical records found for the given animal_id")
 
-    # Step 5: Return the medical records as a list of MedicalRecordResponse
+    # Step 5: Return the records as a list of MedicalRecordResponse
     return [schemas.MedicalRecordResponse.from_orm(record) for record in medical_records]
 
 #employees
@@ -272,14 +271,20 @@ def create_food_inventory(db: Session, food_inventory: schemas.FoodInventoryCrea
     return db_food_inventory
 
 # Update an existing food inventory item
-def update_food_inventory(db: Session, food_id: int, food_inventory: schemas.FoodInventoryUpdate):
+def update_food_inventory(db: Session, food_id: int, stock: int):
+    # Fetch the existing food inventory item by food_id
     db_food_inventory = db.query(models.FoodInventory).filter(models.FoodInventory.food_id == food_id).first()
+    
     if db_food_inventory:
-        for key, value in food_inventory.dict(exclude_unset=True).items():
-            setattr(db_food_inventory, key, value)
+        # Update only the stock value, leaving other values unchanged
+        db_food_inventory.stock = stock
+        
+        # Commit the change to the database
         db.commit()
         db.refresh(db_food_inventory)
+        
         return db_food_inventory
+    
     return None
 
 # Delete a food inventory item by food_id
@@ -290,3 +295,115 @@ def delete_food_inventory(db: Session, food_id: int):
         db.commit()
         return db_food_inventory
     return None
+
+# adopters
+
+def create_adopter(db: Session, adopter_data: AdopterCreate):
+    # Step 1: Get the last adopter ID
+    last_adopter = db.query(models.Adopter).order_by(models.Adopter.adopter_id.desc()).first()
+    
+    if last_adopter:
+        # Extract the numeric part and increment it
+        last_id = int(last_adopter.adopter_id[2:])  # Extract number part from "ADXXX"
+        new_id = f"AD{last_id + 1:03d}"  # Increment and format to "ADXXX"
+    else:
+        new_id = "AD001"  # Starting value if no records exist
+
+    # Step 2: Create a new adopter record with the new ID
+    adopter = models.Adopter(
+        adopter_id=new_id,  # Use the dynamically generated ID
+        name=adopter_data.name,
+        animal_id=adopter_data.animal_id,
+        contribution=adopter_data.contribution
+    )
+
+    # Add the new adopter to the database
+    db.add(adopter)
+    db.commit()
+    db.refresh(adopter)
+    return adopter
+
+# Get all adopters
+def get_all_adopters(db: Session):
+    return db.query(Adopter).all()
+
+# Get adopter by ID
+def get_adopter_by_id(db: Session, adopter_id: str):
+    return db.query(Adopter).filter(Adopter.adopter_id == adopter_id).first()
+
+# Update adopter
+def update_adopter(db: Session, adopter_id: str, update_data: AdopterUpdate):
+    adopter = db.query(Adopter).filter(Adopter.adopter_id == adopter_id).first()
+    if not adopter:
+        return None
+    for key, value in update_data.dict(exclude_unset=True).items():
+        setattr(adopter, key, value)
+    db.commit()
+    db.refresh(adopter)
+    return adopter
+
+# Delete adopter
+def delete_adopter(db: Session, adopter_id: str):
+    adopter = db.query(Adopter).filter(Adopter.adopter_id == adopter_id).first()
+    if not adopter:
+        return None
+    db.delete(adopter)
+    db.commit()
+    return adopter
+
+#medicine
+# Create a new medicine and generate a medicine_id
+def create_medicine(db: Session, medicine: schemas.MedicineInventoryCreate):
+    # Step 1: Get the last medicine ID
+    last_medicine = db.query(MedicineInventory).order_by(MedicineInventory.medicine_id.desc()).first()
+    
+    if last_medicine:
+        # Extract the numeric part and increment it
+        last_id = int(last_medicine.medicine_id[3:])  # Extract number part from "MEDXXX"
+        new_id = f"M{last_id + 1:03d}"  # Increment and format to "MEDXXX"
+    else:
+        new_id = "M001"  # Starting value if no records exist
+
+    # Step 2: Create a new medicine record with the new ID
+    db_medicine = MedicineInventory(
+        medicine_id=new_id,  # Use the dynamically generated ID
+        name=medicine.name,
+        stock=medicine.stock,
+        expiry=medicine.expiry,
+        date_of_buying=medicine.date_of_buying
+    )
+    
+    # Step 3: Add and commit the new medicine to the database
+    db.add(db_medicine)
+    db.commit()
+    db.refresh(db_medicine)
+
+    return db_medicine
+
+
+# Get medicine by medicine_id
+def get_medicine(db: Session, medicine_id: str):
+    return db.query(MedicineInventory).filter(MedicineInventory.medicine_id == medicine_id).first()
+
+
+# Update the stock of an existing medicine
+def update_medicine_stock(db: Session, medicine_id: str, new_stock: int):
+    db_medicine = db.query(MedicineInventory).filter(MedicineInventory.medicine_id == medicine_id).first()
+    
+    if db_medicine:
+        db_medicine.stock = new_stock
+        db.commit()
+        db.refresh(db_medicine)
+        return db_medicine
+    return None
+
+
+# Delete a medicine by medicine_id
+def delete_medicine(db: Session, medicine_id: str):
+    db_medicine = db.query(MedicineInventory).filter(MedicineInventory.medicine_id == medicine_id).first()
+    
+    if db_medicine:
+        db.delete(db_medicine)
+        db.commit()
+        return True
+    return False

@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 BASE_URL = "http://localhost:8000/animals"
-
+            
 def add_animal():
     st.header("Add a New Animal")
     with st.form("add_animal_form"):

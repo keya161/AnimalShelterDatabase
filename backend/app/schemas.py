@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import date
 from typing import List, Optional
 from app.models import RoleEnum
@@ -39,7 +39,7 @@ class AnimalResponse(BaseModel):
 # -------------------------
 # Get All details about an animal including reports and adopter
 # -------------------------
-class AdopterBase(BaseModel):
+class AdopterGet(BaseModel):
     adopter_id: str
     name: str
     contribution: float
@@ -57,7 +57,7 @@ class AnimalDetail(BaseModel):
     animal_id: str  # This should match the type in your Animal model
     name: str
     breed: str  # Ensure breed is a string
-    passive_adopter: Optional[List[AdopterBase]]  # If it's a string, use Optional
+    passive_adopter: Optional[List[AdopterGet]]  # If it's a string, use Optional
     medical_records: List[MedicalRecordBase]  # List of medical record
         
 # -------------------------
@@ -65,6 +65,7 @@ class AnimalDetail(BaseModel):
 # -------------------------
 
 class MedicalRecordCreate(BaseModel):
+    animal_id: str
     name: str
     report: Optional[str] = None
     doctor: str
@@ -74,21 +75,11 @@ class MedicalRecordCreate(BaseModel):
     follow_up: Optional[date] = None
     freq_of_usage: Optional[int] = None
 
-class MedicalRecord(MedicalRecordCreate):
     class Config:
         from_attributes = True
 
-class MedicalRecordResponse(BaseModel):
+class MedicalRecordResponse(MedicalRecordCreate):
     record_id: str
-    animal_id: str
-    name: str
-    report: str
-    doctor: str
-    date: date
-    diagnosis: str
-    medicine: str
-    follow_up: date
-    freq_of_usage: int
 
     class Config:
         from_attributes = True
@@ -170,8 +161,8 @@ class FoodInventoryCreate(FoodInventoryBase):
     pass
 
 # Schema for updating food inventory
-class FoodInventoryUpdate(FoodInventoryBase):
-    pass
+class FoodInventoryUpdate(BaseModel):
+    stock: Optional[int] = None  # Only stock is required in the update
 
 # Schema for the database model
 class FoodInventoryInDB(FoodInventoryBase):
@@ -190,13 +181,43 @@ class MedicineInventoryCreate(MedicineInventoryBase):
     pass  # Same as MedicineInventoryBase for create
 
 class MedicineInventoryUpdate(BaseModel):
-    name: Optional[str]
+    # name: Optional[str]
     stock: Optional[int]
-    expiry: Optional[date]
-    date_of_buying: Optional[date]
+    # expiry: Optional[date]
+    # date_of_buying: Optional[date]
 
 class MedicineInventoryInDB(MedicineInventoryBase):
     medicine_id: str  # Include the medicine ID for DB responses
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+        
+class AdopterCreate(BaseModel):
+    # adopter_id: str = Field(..., max_length=5)
+    name: str
+    animal_id: str
+    contribution: float
+
+# Schema for updating an adopter
+class AdopterUpdate(BaseModel):
+    name: Optional[str]
+    contribution: Optional[float]
+
+# Schema for reading adopter details
+class AdopterBase(BaseModel):
+    adopter_id: str
+    name: str
+    animal_id: str
+    contribution: float
+
+    class Config:
+        from_attributes = True
+        
+        
+# Nested query -> get all animals who dont have medical records
+class AnimalNameResponse(BaseModel):
+    name: str
+
+    class Config:
+        from_attributes = True
+        

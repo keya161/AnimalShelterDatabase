@@ -1,16 +1,26 @@
 import streamlit as st
 from animals import add_animal, get_animal, update_animal, delete_animal
+from animal_details import get_animal_by_name
 from auth import login, register
 from type import add_type, get_type, update_type, delete_type
 from food import add_food_inventory, get_food_inventory, update_food_inventory, delete_food_inventory
 from employees import create_employee, view_employees
 from record import add_record, view_records
-from meds import add_medical_inventory, get_medical_inventory, update_medical_inventory, delete_medical_inventory
+from adopter import add_adopter, get_adopter, update_adopter, delete_adopter
+from queries import get_animals_without_medical_records
+from join import process_and_display_animals
+from animals_by_type import display_animals_by_breed
+from medicine import get_medicine, create_medicine, delete_medicine, update_medicine_stock
 import admin
+import requests
 
+# menu = ["View Food Inventory", "Add Food Item", "Update Food Item", "Delete Food Item"]
+#     choice = st.sidebar.selectbox("Select Action", menu)
 
+    
 # FastAPI backend URL
 BASE_URL = "http://localhost:8000/auth"  # Replace with your FastAPI server URL
+API_URL = "http://127.0.0.1:8000/queries/animals_with_medical_records_and_adopters"  # Endpoint for the new query
 
 # Page navigation
 page = st.sidebar.selectbox("Choose an option", ["Login", "Register"])
@@ -23,9 +33,25 @@ if "role" in st.session_state and st.session_state["role"] == "admin":
     # Create two separate selectboxes: one for animals, and one for types
     option1 = st.sidebar.selectbox("Animals:", ["Select Action", "Add Animal", "Get Animal", "Update Animal", "Delete Animal"])
     option2 = st.sidebar.selectbox("Types:", ["Select Action", "Add Type", "Get Type", "Update Type", "Delete Type"])
-    option3 = st.sidebar.selectbox("Food Inventory:", ["Select Action", "Add Food Type", "Get Food Type", "Update Food Type", "Delete Food Type"])
-    option4 = st.sidebar.selectbox("Medicine Inventory:", ["Select Action", "Add Medicine Type", "Get Medicine Type", "Update Medicine Type", "Delete Medicine Type"])
+    # option3 = st.sidebar.selectbox("Food Inventory:", ["Select Action", "Add Food Type", "Get Food Type", "Update Food Type", "Delete Food Type"])
+    # option4 = st.sidebar.selectbox("Medicine Inventory:", ["Select Action", "Add Medicine Type", "Get Medicine Type", "Update Medicine Type", "Delete Medicine Type"])
     option5 = st.sidebar.selectbox("Employees:", ("Select Action","Create Employee", "View Employees"))
+    option6 = st.sidebar.selectbox("Animal Details:", ("Select Action","Get Animal By Name","Get Animals With Medical Records and Adopters","Get Animals Without Medical Records","Get Animals by Type"))
+    operation = st.sidebar.selectbox("Adopter:", ["Select Action","Add Adopter", "Get Adopter", "Update Adopter", "Delete Adopter"])
+    # nested = st.sidebar.selectbox("Queries:", ("Select Action","Get Animals Without Medical Records"))
+    menu = ["Select Action","View Food Inventory", "Add Food Item", "Update Food Item", "Delete Food Item"]
+    choice = st.sidebar.selectbox("Food Inventory:", menu)
+    menu1 = ["Select Action","Add Medicine", "Get Medicine", "Update Medicine Stock", "Delete Medicine"]
+    choice1 = st.sidebar.selectbox("Medicine Inventory:", menu1)
+
+    if choice1 == "Add Medicine":
+        create_medicine()
+    elif choice1 == "Get Medicine":
+        get_medicine()
+    elif choice1 == "Update Medicine Stock":
+        update_medicine_stock()
+    elif choice1 == "Delete Medicine":
+        delete_medicine()
 
 
     # Show only the relevant content based on the selection
@@ -47,25 +73,16 @@ if "role" in st.session_state and st.session_state["role"] == "admin":
     elif option2 == "Delete Type":
         delete_type()
         
-    #food     
-    if option3 == "Add Food Type":
-        add_food_inventory()
-    elif option3 == "Get Food Type":
-        get_food_inventory()
-    elif option3 == "Update Food Type":
-        update_food_inventory()
-    elif option3 == "Delete Food Type":
-        delete_food_inventory()
+    # #food     
+    # if option3 == "Add Food Type":
+    #     add_food_inventory()
+    # elif option3 == "Get Food Type":
+    #     get_food_inventory()
+    # elif option3 == "Update Food Type":
+    #     update_food_inventory()
+    # elif option3 == "Delete Food Type":
+    #     delete_food_inventory()
 
-    #meds     
-    if option4 == "Add Medicine Type":
-        add_medical_inventory()
-    elif option4 == "Get Medicine Type":
-        get_medical_inventory()
-    elif option4 == "Update Medicine Type":
-        update_medical_inventory()
-    elif option4 == "Delete Medicine Type":
-        delete_medical_inventory()
         
     #employee creation
     # Execute the corresponding function based on the selection
@@ -73,6 +90,49 @@ if "role" in st.session_state and st.session_state["role"] == "admin":
         create_employee()
     elif option5 == "View Employees":
         view_employees()
+        
+    if option6 == "Get Animal By Name":
+        get_animal_by_name()
+    elif option6=="Get Animals With Medical Records and Adopters":
+        process_and_display_animals()
+    elif option6 == "Get Animals by Type":
+        display_animals_by_breed()
+    elif option6 == "Get Animals Without Medical Records":
+        animals = get_animals_without_medical_records()
+        if animals:
+            # Show the animals as a table
+            st.write("Animals without medical records:")
+            st.table(animals)
+        else:
+            st.write("No animals found without medical records.")
+        
+    if operation == "Add Adopter":
+        add_adopter()
+    elif operation == "Get Adopter":
+        get_adopter()
+    elif operation == "Update Adopter":
+        update_adopter()
+    elif operation == "Delete Adopter":
+        delete_adopter()
+        
+    if choice == "View Food Inventory":
+        get_food_inventory()
+    elif choice == "Add Food Item":
+        add_food_inventory()
+    elif choice == "Update Food Item":
+        update_food_inventory()
+    elif choice == "Delete Food Item":
+        delete_food_inventory()
+        
+    # if nested == "Get Animals Without Medical Records":
+    #     if st.button("Fetch Animals Without Medical Records"):
+    #         animals = get_animals_without_medical_records()
+    #         if animals:
+    #             # Show the animals as a table
+    #             st.write("Animals without medical records:")
+    #             st.table(animals)
+    #         else:
+    #             st.write("No animals found without medical records.")
 
 # # If logged in as a regular user, show the regular user options
 # elif "role" in st.session_state and st.session_state["role"] != "admin":
@@ -83,19 +143,17 @@ if "role" in st.session_state and st.session_state["role"] == "admin":
 elif "role" in st.session_state and st.session_state["role"] == "volunteer":
     st.title("Volunteer Dashboard")
     st.write("Welcome to the Volunteer Dashboard!")
+    
+    # nested = st.sidebar.selectbox("Queries:", ("Select Action","Get Animals Without Medical Records"))
+    menu = ["Update Food Item"]
+    choice = st.sidebar.selectbox("Select Action", "Update Food Item")
+    if choice:
+        update_food_inventory()
+    menu = ["Update Medicine Stock"]
+    choice = st.sidebar.selectbox("Select Action", menu)
 
-    # Volunteer actions (buttons for Update Food Inventory and Update Medical Inventory)
-    col1, col2 = st.columns(2)  # Create two columns for buttons side by side
-
-    # Button for Update Food Inventory
-    with col1:
-        if st.button("Update Food Inventory"):
-            update_food_inventory()
-
-    # Button for Update Medical Inventory
-    with col2:
-        if st.button("Update Medical Inventory"):
-            update_medical_inventory()
+    if choice:
+        update_medicine_stock()
 
 elif "role" in st.session_state and st.session_state["role"] == "doctor":
     st.title("Doctor Dashboard")

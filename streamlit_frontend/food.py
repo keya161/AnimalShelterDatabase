@@ -42,25 +42,35 @@ def get_food_inventory():
 
 # Function to update details of an existing food inventory item
 def update_food_inventory():
-    st.header("Update Food Inventory Item")
-    with st.form("update_food_inventory_form"):
-        food_id = st.text_input("Food ID to update")
-        new_food_type = st.text_input("New Food Type")
+    st.header("Update Food Inventory Stock")
+    
+    # Form to update stock
+    with st.form("update_stock_form"):
+        food_id = st.text_input("Food ID", placeholder="Enter the Food ID to update")
         new_stock = st.number_input("New Stock", min_value=0, step=1)
-        new_cost_per_kg = st.number_input("New Cost per KG", min_value=0.0, step=0.1)
-        update_submitted = st.form_submit_button("Update Food Item")
-
-        if update_submitted:
-            payload = {
-                "type": new_food_type,
-                "stock": new_stock,
-                "cost_per_kg": new_cost_per_kg
-            }
+        submitted = st.form_submit_button("Update Stock")
+        
+        if submitted:
+            # Payload to send to the API
+            payload = {"stock": new_stock}
+            
+            # Make the PUT request to update stock
             response = requests.put(f"{BASE_URL}/{food_id}", json=payload)
+            
             if response.status_code == 200:
-                st.success("Food Inventory Item updated successfully!")
+                st.success("Stock updated successfully!")
+                
+                # Try fetching the updated item
+                fetch_response = requests.get(f"{BASE_URL}/{food_id}")
+                if fetch_response.status_code == 404:
+                    st.warning("The item was deleted due to stock depletion.")
+                else:
+                    st.info("The item still exists in the inventory.")
+                    updated_item = fetch_response.json()
+                    st.write("Updated Item Details:")
+                    st.json(updated_item)
             else:
-                st.error(f"Error: {response.json().get('detail', 'Food item not found')}")
+                st.error(f"Error: {response.json().get('detail', 'Unknown error')}")
 
 # Function to delete a food inventory item
 def delete_food_inventory():
@@ -73,21 +83,21 @@ def delete_food_inventory():
         else:
             st.error(f"Error: {response.json().get('detail', 'Food item not found')}")
 
-# # Main function to display the frontend menu
+# Main function to display the frontend menu
 # def main():
 #     st.title("Food Inventory Management")
 
-#     menu = ["View Food Inventory", "Add Food Item", "Update Food Item", "Delete Food Item"]
-#     choice = st.sidebar.selectbox("Select Action", menu)
+    # menu = ["View Food Inventory", "Add Food Item", "Update Food Item", "Delete Food Item"]
+    # choice = st.sidebar.selectbox("Select Action", menu)
 
-#     if choice == "View Food Inventory":
-#         get_food_inventory()
-#     elif choice == "Add Food Item":
-#         add_food_inventory()
-#     elif choice == "Update Food Item":
-#         update_food_inventory()
-#     elif choice == "Delete Food Item":
-#         delete_food_inventory()
+    # if choice == "View Food Inventory":
+    #     get_food_inventory()
+    # elif choice == "Add Food Item":
+    #     add_food_inventory()
+    # elif choice == "Update Food Item":
+    #     update_food_inventory()
+    # elif choice == "Delete Food Item":
+    #     delete_food_inventory()
 
 # if __name__ == "__main__":
 #     main()
