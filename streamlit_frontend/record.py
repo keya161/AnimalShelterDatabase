@@ -35,7 +35,7 @@ def add_record():
                 "freq_of_usage": freq
             }
 
-            response = requests.post(f"{BASE_URL}/medical-records/create", json=record_data)
+            response = requests.post(f"{BASE_URL}/create", json=record_data)
 
             if response.status_code == 200:
                 st.success("Record added successfully!")
