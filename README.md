@@ -15,7 +15,6 @@ This is a comprehensive Animal Shelter Management System built with FastAPI (bac
   - Update food and medicine inventory
 - **Doctor**: Medical record management
   - Add and view medical records
-- **Regular User**: Basic animal information access
 
 ### Key Functionalities
 - Animal Management
